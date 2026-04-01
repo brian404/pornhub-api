@@ -6,44 +6,55 @@ const { getRandomUserAgent } = require('./ua-rotate');
 const categoryMap = {};
 
 const populateCategories = async () => {
-    try {
-        const url = 'https://www.pornhub.com/categories';
-        const ua = getRandomUserAgent();
-        console.log(`Fetching categories with UA: ${ua}`);
-        
-        const { data } = await axios.get(url, { 
-            headers: { 'User-Agent': ua } 
-        });
-        
-        const $ = cheerio.load(data);
-        let categoriesData = null;
+    const maxAttempts = 7;
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const url = 'https://www.pornhub.com/categories';
+            const ua = getRandomUserAgent();
+            console.log(`Fetching categories (attempt ${attempt}/${maxAttempts}) with UA: ${ua}`);
+            
+            const { data } = await axios.get(url, { 
+                headers: { 'User-Agent': ua },
+                timeout: 15000
+            });
+            
+            const $ = cheerio.load(data);
+            let categoriesData = null;
 
-        $('script').each((i, elem) => {
-            const scriptContent = $(elem).html();
-            if (scriptContent && scriptContent.includes('allCategoriesCombined')) {
-                const match = scriptContent.match(/allCategoriesCombined = JSON\.parse\('(.+?)'\);/);
-                if (match && match[1]) {
-                    categoriesData = JSON.parse(match[1].replace(/\\"/g, '"'));
+            $('script').each((i, elem) => {
+                const scriptContent = $(elem).html();
+                if (scriptContent && scriptContent.includes('allCategoriesCombined')) {
+                    const match = scriptContent.match(/allCategoriesCombined = JSON\.parse\('(.+?)'\);/);
+                    if (match && match[1]) {
+                        categoriesData = JSON.parse(match[1].replace(/\\"/g, '"'));
+                    }
                 }
-            }
-        });
+            });
 
-        if (!categoriesData) {
-            throw new Error('Could not find allCategoriesCombined in the page');
+            if (categoriesData && categoriesData.length > 0) {
+                categoriesData.forEach(category => {
+                    const name = category.name.toLowerCase().replace(/\s+/g, '-');
+                    const id = category.id;
+                    if (name && id) {
+                        categoryMap[name] = id;
+                    }
+                });
+
+                console.log('Category mapping initialized with', Object.keys(categoryMap).length, 'categories');
+                return;
+            }
+        } catch (error) {
+            console.error(`Attempt ${attempt} failed:`, error.message);
         }
 
-        categoriesData.forEach(category => {
-            const name = category.name.toLowerCase().replace(/\s+/g, '-');
-            const id = category.id;
-            if (name && id) {
-                categoryMap[name] = id;
-            }
-        });
-
-        console.log('Category mapping initialized with', Object.keys(categoryMap).length, 'categories');
-    } catch (error) {
-        console.error('Failed to initialize category mapping:', error.message);
+        if (attempt < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
     }
+
+    console.error('Failed to initialize category mapping after 7 attempts.');
+    process.exit(1);
 };
 
 populateCategories();
