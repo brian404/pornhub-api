@@ -53,11 +53,7 @@
       transition: background .3s, color .3s;
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      min-height: 100vh;
-    }
+    .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
 
     .sidebar {
       background: var(--bg2);
@@ -69,6 +65,7 @@
       padding: 0 0 40px;
       scrollbar-width: thin;
     }
+
     .sidebar-logo {
       padding: 28px 24px 20px;
       border-bottom: 1px solid var(--border);
@@ -80,7 +77,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 3px;
-      flex-shrink: 0;
     }
     .sidebar-logo .dot-cluster span {
       width: 7px; height: 7px;
@@ -94,7 +90,6 @@
       font-size: 1rem;
       font-weight: 800;
       letter-spacing: .04em;
-      line-height: 1.2;
     }
     .sidebar-logo h1 small {
       display: block;
@@ -104,6 +99,7 @@
       letter-spacing: .12em;
       text-transform: uppercase;
     }
+
     .sidebar-section {
       padding: 20px 24px 6px;
       font-size: .65rem;
@@ -129,6 +125,7 @@
       background: var(--bg3);
       border-left-color: var(--accent);
     }
+
     .method-pill {
       font-family: 'IBM Plex Mono', monospace;
       font-size: .6rem;
@@ -138,8 +135,8 @@
       text-transform: uppercase;
     }
     .pill-get  { background: rgba(61,240,162,.12); color: var(--get); }
-    .pill-post { background: rgba(240,201,61,.12);  color: var(--post); }
-    .pill-del  { background: rgba(240,92,61,.12);   color: var(--del); }
+    .pill-post { background: rgba(240,201,61,.12); color: var(--post); }
+    .pill-del  { background: rgba(240,92,61,.12); color: var(--del); }
 
     .main { min-width: 0; }
 
@@ -175,15 +172,9 @@
       box-shadow: 0 0 6px var(--accent);
       animation: pulse 2s infinite;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: .4; }
-    }
-    .topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
     .version-badge {
       font-size: .72rem;
       color: var(--text-muted);
@@ -206,14 +197,9 @@
     }
     .theme-toggle:hover { border-color: var(--accent); }
 
-    .content {
-      padding: 48px 40px;
-      max-width: 860px;
-    }
+    .content { padding: 48px 40px; max-width: 860px; }
 
-    .page-header {
-      margin-bottom: 56px;
-    }
+    .page-header { margin-bottom: 56px; }
     .page-header .eyebrow {
       font-size: .7rem;
       font-weight: 600;
@@ -280,8 +266,8 @@
       flex-shrink: 0;
     }
     .ep-method.GET  { background: rgba(61,240,162,.1); color: var(--get); border: 1px solid rgba(61,240,162,.25); }
-    .ep-method.POST { background: rgba(240,201,61,.1);  color: var(--post); border: 1px solid rgba(240,201,61,.25); }
-    .ep-method.DEL  { background: rgba(240,92,61,.1);   color: var(--del); border: 1px solid rgba(240,92,61,.25); }
+    .ep-method.POST { background: rgba(240,201,61,.1); color: var(--post); border: 1px solid rgba(240,201,61,.25); }
+    .ep-method.DEL  { background: rgba(240,92,61,.1); color: var(--del); border: 1px solid rgba(240,92,61,.25); }
     .ep-path {
       font-family: 'IBM Plex Mono', monospace;
       font-size: .85rem;
@@ -357,6 +343,7 @@
     }
     .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
     .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
     pre {
       padding: 14px 16px;
       font-family: 'IBM Plex Mono', monospace;
@@ -365,6 +352,7 @@
       overflow-x: auto;
       color: #e2e8f3;
       white-space: pre;
+      tab-size: 2;
     }
     .t-k  { color: #6c8eff; }
     .t-s  { color: #3df0a2; }
@@ -408,6 +396,7 @@
     }
     .test-input:focus { border-color: var(--accent); }
     .test-input::placeholder { color: var(--text-muted); }
+
     .test-actions { display: flex; gap: 8px; }
     .btn-test {
       font-family: 'Syne', sans-serif;
@@ -425,6 +414,7 @@
     .btn-test:hover { opacity: .85; }
     .btn-test:active { transform: scale(.97); }
     .btn-test:disabled { opacity: .4; cursor: not-allowed; }
+
     .btn-clear {
       font-family: 'Syne', sans-serif;
       font-weight: 600;
@@ -447,6 +437,7 @@
       border: 1px solid var(--border);
     }
     .test-response.visible { display: block; }
+
     .response-meta {
       display: flex;
       align-items: center;
@@ -463,8 +454,9 @@
       border-radius: 3px;
     }
     .status-badge.ok    { background: rgba(61,240,162,.15); color: var(--get); }
-    .status-badge.err   { background: rgba(240,92,61,.15);  color: var(--del); }
+    .status-badge.err   { background: rgba(240,92,61,.15); color: var(--del); }
     .status-badge.warn  { background: rgba(240,201,61,.15); color: var(--post); }
+
     .response-time {
       font-family: 'IBM Plex Mono', monospace;
       font-size: .68rem;
@@ -510,7 +502,6 @@
 <body>
 
 <div class="layout">
-
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="dot-cluster">
@@ -518,13 +509,11 @@
       </div>
       <h1>API Docs <small>Unofficial</small></h1>
     </div>
-
     <div class="sidebar-section">Endpoints</div>
     <nav id="sidebar-nav"></nav>
   </aside>
 
   <div class="main">
-
     <header class="topbar">
       <div class="base-url-display">
         <span class="live-dot"></span>
@@ -545,7 +534,6 @@
     </header>
 
     <div class="content">
-
       <div class="page-header">
         <div class="eyebrow">Reference</div>
         <h2>Unofficial Pornhub API</h2>
@@ -554,7 +542,6 @@
       </div>
 
       <div id="endpoints-container"></div>
-
     </div>
   </div>
 </div>
@@ -576,6 +563,39 @@ async function loadBaseUrl() {
     console.warn("url.env not found, using default");
   }
   document.getElementById('base-url-display').textContent = ENV.BASE_URL;
+  updateAllCurlExamples();
+}
+
+function buildUrl(path, params = {}) {
+  let url = path;
+  for (const [k, v] of Object.entries(params)) {
+    if (v) url = url.replace(`:${k}?`, v).replace(`:${k}`, v);
+    else url = url.replace(`/:${k}?`, '').replace(`/:${k}`, '');
+  }
+  return ENV.BASE_URL + url;
+}
+
+function updateAllCurlExamples() {
+  document.querySelectorAll('pre[id^="curl-"]').forEach(pre => {
+    let html = pre.innerHTML;
+    const oldUrl = html.match(/https?:\/\/[^\s<]+/);
+    if (oldUrl) {
+      const newUrl = buildUrl(oldUrl[0].replace(ENV.BASE_URL, ''));
+      pre.innerHTML = html.replace(oldUrl[0], newUrl);
+    }
+  });
+}
+
+function highlightJson(text) {
+  return text
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+      let cls = 't-n';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) cls = 't-k';
+        else cls = 't-s';
+      } else if (/true|false|null/.test(match)) cls = 't-m';
+      return `<span class="${cls}">${match}</span>`;
+    });
 }
 
 const endpoints = [
@@ -595,11 +615,8 @@ const endpoints = [
 function buildUrl(path, params = {}) {
   let url = path;
   for (const [k, v] of Object.entries(params)) {
-    if (v) {
-      url = url.replace(`:${k}?`, v).replace(`:${k}`, v);
-    } else {
-      url = url.replace(`/:${k}?`, '').replace(`/:${k}`, '');
-    }
+    if (v) url = url.replace(`:${k}?`, v).replace(`:${k}`, v);
+    else url = url.replace(`/:${k}?`, '').replace(`/:${k}`, '');
   }
   return ENV.BASE_URL + url;
 }
@@ -735,7 +752,7 @@ document.addEventListener('click', async e => {
     const respEl = document.getElementById(`resp-${id}`);
     const statusEl = document.getElementById(`status-${id}`);
     const timeEl = document.getElementById(`time-${id}`);
-    const bodyEl = document.getElementById(`body-${id}`);
+    const bodyEl = document.getElementById(`body-${ep.id}`);
 
     const paramVals = {};
     if (ep.params) {
@@ -755,23 +772,24 @@ document.addEventListener('click', async e => {
     try {
       const res = await fetch(url, { method });
       const elapsed = Date.now() - t0;
-      const contentType = res.headers.get('content-type') || '';
       let text = '';
 
-      if (contentType.includes('json')) {
+      if (res.headers.get('content-type')?.includes('json')) {
         const json = await res.json();
         text = JSON.stringify(json, null, 2);
-      } else if (contentType.includes('html')) {
+        bodyEl.innerHTML = highlightJson(text);
+      } else if (res.headers.get('content-type')?.includes('html')) {
         text = '[HTML response — open in browser]';
+        bodyEl.textContent = text;
       } else {
         text = `[Binary stream — ${res.headers.get('content-length') || '?'} bytes]`;
+        bodyEl.textContent = text;
       }
 
       const statusClass = res.ok ? 'ok' : (res.status >= 500 ? 'err' : 'warn');
       statusEl.textContent = `${res.status} ${res.statusText}`;
       statusEl.className = `status-badge ${statusClass}`;
       timeEl.textContent = `${elapsed} ms`;
-      bodyEl.textContent = text;
     } catch (err) {
       statusEl.textContent = 'Network Error';
       statusEl.className = 'status-badge err';
