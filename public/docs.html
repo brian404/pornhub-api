@@ -564,7 +564,7 @@ let ENV = { BASE_URL: "https://node-1-sync.obj3ct32.com:8443" };
 
 async function loadBaseUrl() {
   try {
-    const res = await fetch('url.env');
+    const res = await fetch('/url.env');
     if (res.ok) {
       const text = await res.text();
       const match = text.match(/BASE_URL\s*=\s*["']?([^"'\s]+)["']?/);
