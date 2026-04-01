@@ -563,7 +563,7 @@ async function loadBaseUrl() {
     console.warn("url.env not found, using default");
   }
   document.getElementById('base-url-display').textContent = ENV.BASE_URL;
-  updateAllCurlExamples();
+  updateAllCurlExamples();   // Ensure cURL updates after base URL loads
 }
 
 function buildUrl(path, params = {}) {
@@ -578,24 +578,23 @@ function buildUrl(path, params = {}) {
 function updateAllCurlExamples() {
   document.querySelectorAll('pre[id^="curl-"]').forEach(pre => {
     let html = pre.innerHTML;
-    const oldUrl = html.match(/https?:\/\/[^\s<]+/);
-    if (oldUrl) {
-      const newUrl = buildUrl(oldUrl[0].replace(ENV.BASE_URL, ''));
-      pre.innerHTML = html.replace(oldUrl[0], newUrl);
+    const oldUrlMatch = html.match(/https?:\/\/[^\s<]+/);
+    if (oldUrlMatch) {
+      const newUrl = buildUrl(oldUrlMatch[0].replace(ENV.BASE_URL, ''));
+      pre.innerHTML = html.replace(oldUrlMatch[0], newUrl);
     }
   });
 }
 
 function highlightJson(text) {
-  return text
-    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
-      let cls = 't-n';
-      if (/^"/.test(match)) {
-        if (/:$/.test(match)) cls = 't-k';
-        else cls = 't-s';
-      } else if (/true|false|null/.test(match)) cls = 't-m';
-      return `<span class="${cls}">${match}</span>`;
-    });
+  return text.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+    let cls = 't-n';
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) cls = 't-k';
+      else cls = 't-s';
+    } else if (/true|false|null/.test(match)) cls = 't-m';
+    return `<span class="${cls}">${match}</span>`;
+  });
 }
 
 const endpoints = [
@@ -810,6 +809,17 @@ document.addEventListener('click', async e => {
     card.querySelectorAll('.test-input').forEach(i => i.value = '');
   }
 });
+
+function highlightJson(text) {
+  return text.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+    let cls = 't-n';
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) cls = 't-k';
+      else cls = 't-s';
+    } else if (/true|false|null/.test(match)) cls = 't-m';
+    return `<span class="${cls}">${match}</span>`;
+  });
+}
 
 const themeToggle = document.getElementById('theme-toggle');
 const sunIcon = document.getElementById('sun-icon');
