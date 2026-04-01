@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unofficial Pornhub API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --api-base-url: "https://node-1-sync.obj3ct32.com:8443";
+    }
+
+    [data-theme="dark"] {
+      --bg:        #0c0f14;
+      --bg2:       #111722;
+      --bg3:       #1a2030;
+      --border:    #232c3d;
+      --text:      #e2e8f3;
+      --text-muted:#6b7a99;
+      --accent:    #3df0a2;
+      --accent2:   #6c8eff;
+      --get:       #3df0a2;
+      --post:      #f0c93d;
+      --del:       #f05c3d;
+      --code-bg:   #080b10;
+      --shadow:    0 4px 32px rgba(0,0,0,.5);
+    }
+    [data-theme="light"] {
+      --bg:        #f4f6fb;
+      --bg2:       #ffffff;
+      --bg3:       #eef1f8;
+      --border:    #d4dae8;
+      --text:      #111827;
+      --text-muted:#6b7280;
+      --accent:    #0d7a50;
+      --accent2:   #2d50cc;
+      --get:       #0d7a50;
+      --post:      #a07000;
+      --del:       #c0280a;
+      --code-bg:   #1a202c;
+      --shadow:    0 4px 24px rgba(0,0,0,.1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .3s, color .3s;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 0 0 40px;
+      scrollbar-width: thin;
+    }
+    .sidebar-logo {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar-logo .dot-cluster {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .sidebar-logo .dot-cluster span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: block;
+    }
+    .sidebar-logo .dot-cluster span:nth-child(2) { background: var(--accent2); }
+    .sidebar-logo .dot-cluster span:nth-child(3) { opacity: .4; }
+    .sidebar-logo h1 {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      line-height: 1.2;
+    }
+    .sidebar-logo h1 small {
+      display: block;
+      font-size: .65rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .sidebar-section {
+      padding: 20px 24px 6px;
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 24px;
+      font-size: .82rem;
+      text-decoration: none;
+      color: var(--text-muted);
+      border-left: 2px solid transparent;
+      transition: all .15s;
+    }
+    .sidebar nav a:hover,
+    .sidebar nav a.active {
+      color: var(--text);
+      background: var(--bg3);
+      border-left-color: var(--accent);
+    }
+    .method-pill {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .6rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .pill-get  { background: rgba(61,240,162,.12); color: var(--get); }
+    .pill-post { background: rgba(240,201,61,.12);  color: var(--post); }
+    .pill-del  { background: rgba(240,92,61,.12);   color: var(--del); }
+
+    .main { min-width: 0; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+    }
+    .base-url-display {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .78rem;
+      color: var(--text-muted);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .base-url-display .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .4; }
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .version-badge {
+      font-size: .72rem;
+      color: var(--text-muted);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .theme-toggle {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+    }
+    .theme-toggle:hover { border-color: var(--accent); }
+
+    .content {
+      padding: 48px 40px;
+      max-width: 860px;
+    }
+
+    .page-header {
+      margin-bottom: 56px;
+    }
+    .page-header .eyebrow {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .page-header h2 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .page-header p {
+      color: var(--text-muted);
+      font-size: .95rem;
+      line-height: 1.7;
+      max-width: 560px;
+    }
+    .page-header .updated {
+      margin-top: 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .72rem;
+      color: var(--text-muted);
+    }
+
+    .endpoint-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .endpoint-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+    }
+    .ep-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 24px 28px 20px;
+      gap: 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .ep-header-left { flex: 1; min-width: 0; }
+    .ep-route {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .ep-method {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .75rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .ep-method.GET  { background: rgba(61,240,162,.1); color: var(--get); border: 1px solid rgba(61,240,162,.25); }
+    .ep-method.POST { background: rgba(240,201,61,.1);  color: var(--post); border: 1px solid rgba(240,201,61,.25); }
+    .ep-method.DEL  { background: rgba(240,92,61,.1);   color: var(--del); border: 1px solid rgba(240,92,61,.25); }
+    .ep-path {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .85rem;
+      color: var(--text);
+    }
+    .ep-path .param { color: var(--accent2); }
+    .ep-desc {
+      font-size: .85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .ep-chevron {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      border-radius: 6px;
+      flex-shrink: 0;
+      transition: transform .25s, background .2s;
+    }
+    .ep-chevron svg { width: 16px; height: 16px; }
+    .endpoint-card.open .ep-chevron { transform: rotate(180deg); }
+
+    .ep-body {
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .endpoint-card.open .ep-body { display: block; }
+
+    .ep-section {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ep-section:last-child { border-bottom: none; }
+    .ep-section-label {
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .code-block {
+      background: var(--code-bg);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .code-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .code-lang {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+    .copy-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .65rem;
+      padding: 3px 9px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+    pre {
+      padding: 14px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .8rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      color: #e2e8f3;
+      white-space: pre;
+    }
+    .t-k  { color: #6c8eff; }
+    .t-s  { color: #3df0a2; }
+    .t-n  { color: #f0c93d; }
+    .t-m  { color: #f05c3d; }
+    .t-c  { color: #888; font-style: italic; }
+
+    .test-panel {
+      background: var(--bg3);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .test-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+    }
+    .test-panel-header span {
+      font-size: .72rem;
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .test-inputs {
+      padding: 0 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .test-input {
+      width: 100%;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .8rem;
+      padding: 8px 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .test-input:focus { border-color: var(--accent); }
+    .test-input::placeholder { color: var(--text-muted); }
+    .test-actions { display: flex; gap: 8px; }
+    .btn-test {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: .8rem;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      background: var(--accent);
+      color: #0a1a10;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-test:hover { opacity: .85; }
+    .btn-test:active { transform: scale(.97); }
+    .btn-test:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-clear {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: .8rem;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-clear:hover { border-color: var(--accent); color: var(--text); }
+
+    .test-response {
+      margin: 0 14px 14px;
+      border-radius: 6px;
+      overflow: hidden;
+      display: none;
+      border: 1px solid var(--border);
+    }
+    .test-response.visible { display: block; }
+    .response-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: var(--code-bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .status-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .7rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+    .status-badge.ok    { background: rgba(61,240,162,.15); color: var(--get); }
+    .status-badge.err   { background: rgba(240,92,61,.15);  color: var(--del); }
+    .status-badge.warn  { background: rgba(240,201,61,.15); color: var(--post); }
+    .response-time {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .68rem;
+      color: var(--text-muted);
+    }
+    .response-body {
+      background: var(--code-bg);
+      padding: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .78rem;
+      line-height: 1.6;
+      color: #e2e8f3;
+      max-height: 260px;
+      overflow-y: auto;
+      white-space: pre;
+    }
+
+    .spinner {
+      width: 12px; height: 12px;
+      border: 2px solid rgba(0,0,0,.2);
+      border-top-color: #0a1a10;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      display: none;
+    }
+    .btn-test.loading .spinner { display: inline-block; }
+    .btn-test.loading .btn-label { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    @media (max-width: 720px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .content { padding: 24px 20px; }
+      .topbar { padding: 0 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="dot-cluster">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <h1>API Docs <small>Unofficial</small></h1>
+    </div>
+
+    <div class="sidebar-section">Endpoints</div>
+    <nav id="sidebar-nav"></nav>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <div class="base-url-display">
+        <span class="live-dot"></span>
+        <span id="base-url-display">Loading...</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="version-badge">v1.0 · Mar 2025</span>
+        <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle dark/light mode">
+          <svg id="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+          <svg id="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="page-header">
+        <div class="eyebrow">Reference</div>
+        <h2>Unofficial Pornhub API</h2>
+        <p>Programmatic access to publicly available Pornhub data. All endpoints return JSON except the download endpoint, which streams MP4 binary content.</p>
+        <div class="updated">Last updated: March 19, 2025</div>
+      </div>
+
+      <div id="endpoints-container"></div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let ENV = { BASE_URL: "https://node-1-sync.obj3ct32.com:8443" };
+
+async function loadBaseUrl() {
+  try {
+    const res = await fetch('url.env');
+    if (res.ok) {
+      const text = await res.text();
+      const match = text.match(/BASE_URL\s*=\s*["']?([^"'\s]+)["']?/);
+      if (match && match[1]) {
+        ENV.BASE_URL = match[1].trim();
+      }
+    }
+  } catch (e) {}
+  document.getElementById('base-url-display').textContent = ENV.BASE_URL;
+}
+
+const endpoints = [
+  { id: "root", method: "GET", path: "/api/", title: "Root", desc: "Returns a simple welcome message confirming the API is running.", response: `{\n  <span class='t-k'>"message"</span>: <span class='t-s'>"Welcome to the Unofficial Pornhub API"</span>\n}` },
+  { id: "trending", method: "GET", path: "/api/trending", title: "Trending Videos", desc: "Fetches up to 10 currently trending video IDs from Pornhub.", response: `{\n  <span class='t-k'>"trending"</span>: [<span class='t-s'>"ph5d6402c66bf90"</span>, <span class='t-s'>"ph123456789abcd"</span>, <span class='t-c'>...</span>]\n}` },
+  { id: "random", method: "GET", path: "/api/random", title: "Random Video", desc: "Returns one randomly selected video ID from Pornhub's video catalog.", response: `{\n  <span class='t-k'>"randomVideo"</span>: <span class='t-s'>"ph5d6402c66bf90"</span>\n}` },
+  { id: "categories", method: "GET", path: "/api/categories", title: "Categories", desc: "Lists all available Pornhub categories along with their names and internal IDs.", response: `{\n  <span class='t-k'>"categories"</span>: [\n    { <span class='t-k'>"name"</span>: <span class='t-s'>"amateur"</span>, <span class='t-k'>"id"</span>: <span class='t-s'>"1"</span> },\n    { <span class='t-k'>"name"</span>: <span class='t-s'>"anal"</span>,    <span class='t-k'>"id"</span>: <span class='t-s'>"2"</span> }\n  ]\n}` },
+  { id: "video", method: "GET", path: "/api/video/:id", title: "Video Details", desc: "Retrieves detailed metadata for a specific video including title, direct URL, duration, and thumbnail.", params: [{ name: "id", placeholder: "e.g. ph5d6402c66bf90", label: "Video ID" }], response: `{\n  <span class='t-k'>"video_id"</span>:  <span class='t-s'>"ph5d6402c66bf90"</span>,\n  <span class='t-k'>"title"</span>:    <span class='t-s'>"Example Video Title"</span>,\n  <span class='t-k'>"url"</span>:      <span class='t-s'>"https://www.pornhub.com/view_video.php?viewkey=ph5d6402c66bf90"</span>,\n  <span class='t-k'>"length"</span>:   <span class='t-s'>"22:15"</span>,\n  <span class='t-k'>"thumbnail"</span>: <span class='t-s'>"https://example.com/thumb.jpg"</span>\n}` },
+  { id: "download", method: "GET", path: "/api/download/:id", title: "Download Video", desc: "Streams the full MP4 video file as binary content. Recommended: use curl -L -o video.mp4 [url]", params: [{ name: "id", placeholder: "e.g. ph5d6402c66bf90", label: "Video ID" }], response: `<span class='t-c'>// Streams MP4 binary content (typically 100-500+ MB)</span>` },
+  { id: "pornstar", method: "GET", path: "/api/pornstar/:name?", title: "Pornstar Videos", desc: "Returns video IDs for a specific performer. Omit the name parameter to get a general list.", params: [{ name: "name", placeholder: "e.g. riley-reid", label: "Performer Name (optional)" }], response: `{\n  <span class='t-k'>"pornstar"</span>: <span class='t-s'>"riley-reid"</span>,\n  <span class='t-k'>"videos"</span>:   [<span class='t-s'>"ph5d6402c66bf90"</span>, <span class='t-c'>...</span>]\n}` },
+  { id: "studios", method: "GET", path: "/api/studios", title: "Studios", desc: "Lists all available studios with their names and IDs.", response: `{\n  <span class='t-k'>"studios"</span>: [\n    { <span class='t-k'>"name"</span>: <span class='t-s'>"brazzers"</span>,      <span class='t-k'>"id"</span>: <span class='t-s'>"1"</span> },\n    { <span class='t-k'>"name"</span>: <span class='t-s'>"reality-kings"</span>, <span class='t-k'>"id"</span>: <span class='t-s'>"2"</span> }\n  ]\n}` },
+  { id: "studio", method: "GET", path: "/api/studio/:name", title: "Studio Videos", desc: "Fetches video IDs belonging to a specific studio.", params: [{ name: "name", placeholder: "e.g. brazzers", label: "Studio Name" }], response: `{\n  <span class='t-k'>"studio"</span>: <span class='t-s'>"brazzers"</span>,\n  <span class='t-k'>"videos"</span>: [<span class='t-s'>"ph5d6402c66bf90"</span>, <span class='t-c'>...</span>]\n}` },
+  { id: "category", method: "GET", path: "/api/category/:name", title: "Category Videos", desc: "Returns up to 20 video IDs for a specific category. Use hyphenated lowercase names from the Categories endpoint.", params: [{ name: "name", placeholder: "e.g. amateur", label: "Category Name" }], response: `{\n  <span class='t-k'>"category"</span>: <span class='t-s'>"amateur"</span>,\n  <span class='t-k'>"videos"</span>:   [<span class='t-s'>"ph5d6402c66bf90"</span>, <span class='t-c'>...</span>]\n}` },
+  { id: "status", method: "POST", path: "/api/status", title: "API Status", desc: "Checks if the API server is online and returns current timestamp and uptime.", response: `{\n  <span class='t-k'>"status"</span>:    <span class='t-s'>"online"</span>,\n  <span class='t-k'>"timestamp"</span>: <span class='t-s'>"2025-03-19T12:00:00.000Z"</span>,\n  <span class='t-k'>"uptime"</span>:    <span class='t-n'>1234.56</span>\n}` },
+  { id: "docs", method: "GET", path: "/api/docs", title: "API Documentation", desc: "Serves this interactive HTML documentation page.", response: `<span class='t-c'>// Returns this HTML documentation</span>` }
+];
+
+function buildUrl(path, params = {}) {
+  let url = path;
+  for (const [k, v] of Object.entries(params)) {
+    if (v) {
+      url = url.replace(`:${k}?`, v).replace(`:${k}`, v);
+    } else {
+      url = url.replace(`/:${k}?`, '').replace(`/:${k}`, '');
+    }
+  }
+  return ENV.BASE_URL + url;
+}
+
+const container = document.getElementById('endpoints-container');
+const navEl = document.getElementById('sidebar-nav');
+let isFirst = true;
+
+endpoints.forEach((ep) => {
+  const curlMethod = ep.method === 'POST' ? '-X POST ' : '';
+
+  const link = document.createElement('a');
+  link.href = `#ep-${ep.id}`;
+  link.innerHTML = `<span class="method-pill pill-${ep.method.toLowerCase()}">${ep.method}</span>${ep.title}`;
+  if (isFirst) link.classList.add('active');
+  navEl.appendChild(link);
+
+  let paramsHtml = '';
+  if (ep.params) {
+    ep.params.forEach(p => {
+      paramsHtml += `<input class="test-input" data-param="${p.name}" placeholder="${p.label}: ${p.placeholder}" />`;
+    });
+  }
+
+  const card = document.createElement('div');
+  card.className = 'endpoint-card' + (isFirst ? ' open' : '');
+  card.id = `ep-${ep.id}`;
+
+  const prettyPath = ep.path.replace(/:(\w+)\??/g, `<span class='param'>:$1</span>`);
+
+  card.innerHTML = `
+    <div class="ep-header">
+      <div class="ep-header-left">
+        <div class="ep-route">
+          <span class="ep-method ${ep.method}">${ep.method}</span>
+          <code class="ep-path">${prettyPath}</code>
+        </div>
+        <div class="ep-desc">${ep.desc}</div>
+      </div>
+      <div class="ep-chevron">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="4,6 8,10 12,6"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="ep-body">
+      <div class="ep-section">
+        <div class="ep-section-label">cURL Example</div>
+        <div class="code-block">
+          <div class="code-toolbar">
+            <span class="code-lang">shell</span>
+            <button class="copy-btn" data-copy="curl ${curlMethod}${buildUrl(ep.path)}">Copy</button>
+          </div>
+          <pre><code>curl ${curlMethod}<span class='t-s'>${buildUrl(ep.path)}</span></code></pre>
+        </div>
+      </div>
+
+      <div class="ep-section">
+        <div class="ep-section-label">Example Response</div>
+        <div class="code-block">
+          <div class="code-toolbar">
+            <span class="code-lang">json</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code>${ep.response}</code></pre>
+        </div>
+      </div>
+
+      <div class="ep-section">
+        <div class="ep-section-label">Try It Live</div>
+        <div class="test-panel">
+          <div class="test-panel-header">
+            <span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><polyline points="4.5,3.5 7.5,6 4.5,8.5" fill="currentColor"/></svg>
+              Live Request
+            </span>
+          </div>
+          <div class="test-inputs">
+            ${paramsHtml}
+            <div class="test-actions">
+              <button class="btn-test" data-id="${ep.id}">
+                <div class="spinner"></div>
+                <span class="btn-label">Send Request</span>
+              </button>
+              <button class="btn-clear" data-id="${ep.id}">Clear</button>
+            </div>
+          </div>
+          <div class="test-response" id="resp-${ep.id}">
+            <div class="response-meta">
+              <span class="status-badge" id="status-${ep.id}"></span>
+              <span class="response-time" id="time-${ep.id}"></span>
+            </div>
+            <div class="response-body" id="body-${ep.id}"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  container.appendChild(card);
+  isFirst = false;
+});
+
+document.querySelectorAll('.ep-header').forEach(h => {
+  h.addEventListener('click', () => {
+    const card = h.closest('.endpoint-card');
+    card.classList.toggle('open');
+  });
+});
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.copy-btn');
+  if (btn) {
+    const text = btn.dataset.copy || btn.closest('.code-block')?.querySelector('pre')?.innerText || '';
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+});
+
+document.addEventListener('click', async e => {
+  const sendBtn = e.target.closest('.btn-test');
+  if (sendBtn) {
+    const id = sendBtn.dataset.id;
+    const ep = endpoints.find(x => x.id === id);
+    const card = document.getElementById(`ep-${id}`);
+    const respEl = document.getElementById(`resp-${id}`);
+    const statusEl = document.getElementById(`status-${id}`);
+    const timeEl = document.getElementById(`time-${id}`);
+    const bodyEl = document.getElementById(`body-${id}`);
+
+    const paramVals = {};
+    if (ep.params) {
+      card.querySelectorAll('.test-input').forEach(inp => {
+        paramVals[inp.dataset.param] = inp.value.trim();
+      });
+    }
+
+    const url = buildUrl(ep.path, paramVals);
+    const method = ep.method === 'POST' ? 'POST' : 'GET';
+
+    sendBtn.classList.add('loading');
+    sendBtn.disabled = true;
+    respEl.classList.remove('visible');
+
+    const t0 = Date.now();
+    try {
+      const res = await fetch(url, { method });
+      const elapsed = Date.now() - t0;
+      const contentType = res.headers.get('content-type') || '';
+      let text;
+      if (contentType.includes('json')) {
+        const json = await res.json();
+        text = JSON.stringify(json, null, 2);
+      } else if (contentType.includes('html')) {
+        text = '[HTML response — open in browser]';
+      } else {
+        text = `[Binary stream — ${res.headers.get('content-length') || '?'} bytes]`;
+      }
+
+      const statusClass = res.ok ? 'ok' : (res.status >= 500 ? 'err' : 'warn');
+      statusEl.textContent = `${res.status} ${res.statusText}`;
+      statusEl.className = `status-badge ${statusClass}`;
+      timeEl.textContent = `${elapsed} ms`;
+      bodyEl.textContent = text;
+    } catch (err) {
+      statusEl.textContent = 'Network Error';
+      statusEl.className = 'status-badge err';
+      timeEl.textContent = `${Date.now() - t0} ms`;
+      bodyEl.textContent = err.message;
+    }
+
+    respEl.classList.add('visible');
+    sendBtn.classList.remove('loading');
+    sendBtn.disabled = false;
+  }
+
+  const clearBtn = e.target.closest('.btn-clear');
+  if (clearBtn) {
+    const id = clearBtn.dataset.id;
+    document.getElementById(`resp-${id}`).classList.remove('visible');
+    const card = document.getElementById(`ep-${id}`);
+    card.querySelectorAll('.test-input').forEach(i => i.value = '');
+  }
+});
+
+const themeToggle = document.getElementById('theme-toggle');
+const sunIcon = document.getElementById('sun-icon');
+const moonIcon = document.getElementById('moon-icon');
+let isDark = true;
+
+function updateIcons() {
+  sunIcon.style.display = isDark ? 'none' : 'inline-block';
+  moonIcon.style.display = isDark ? 'inline-block' : 'none';
+}
+
+themeToggle.addEventListener('click', () => {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  updateIcons();
+});
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      document.querySelectorAll('#sidebar-nav a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === `#${id}`);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -60% 0px' });
+
+document.querySelectorAll('.endpoint-card').forEach(c => observer.observe(c));
+
+loadBaseUrl().then(() => {
+  updateIcons();
+});
+</script>
+</body>
+</html>
