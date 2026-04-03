@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --api-base-url: "https://estimated-olimpia-techstar-a2b91f41.koyeb.app";
+      --api-base-url: "https://node-1-sync.obj3ct32.com:8443";
     }
 
     [data-theme="dark"] {
@@ -520,7 +520,7 @@
         <span id="base-url-display">Loading...</span>
       </div>
       <div class="topbar-actions">
-        <span class="version-badge">v1.0 · Mar 2025</span>
+        <span class="version-badge">v1.1 · April 2026</span>
         <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle dark/light mode">
           <svg id="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"></circle>
@@ -538,7 +538,7 @@
         <div class="eyebrow">Reference</div>
         <h2>Unofficial Pornhub API</h2>
         <p>Programmatic access to publicly available Pornhub data. All endpoints return JSON except the download endpoint, which streams MP4 binary content.</p>
-        <div class="updated">Last updated: March 19, 2025</div>
+        <div class="updated">Last updated: April 03, 2026</div>
       </div>
 
       <div id="endpoints-container"></div>
@@ -563,39 +563,9 @@ async function loadBaseUrl() {
     console.warn("url.env not found, using default");
   }
   document.getElementById('base-url-display').textContent = ENV.BASE_URL;
-  updateAllCurlExamples();   // Ensure cURL updates after base URL loads
 }
 
-function buildUrl(path, params = {}) {
-  let url = path;
-  for (const [k, v] of Object.entries(params)) {
-    if (v) url = url.replace(`:${k}?`, v).replace(`:${k}`, v);
-    else url = url.replace(`/:${k}?`, '').replace(`/:${k}`, '');
-  }
-  return ENV.BASE_URL + url;
-}
-
-function updateAllCurlExamples() {
-  document.querySelectorAll('pre[id^="curl-"]').forEach(pre => {
-    let html = pre.innerHTML;
-    const oldUrlMatch = html.match(/https?:\/\/[^\s<]+/);
-    if (oldUrlMatch) {
-      const newUrl = buildUrl(oldUrlMatch[0].replace(ENV.BASE_URL, ''));
-      pre.innerHTML = html.replace(oldUrlMatch[0], newUrl);
-    }
-  });
-}
-
-function highlightJson(text) {
-  return text.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
-    let cls = 't-n';
-    if (/^"/.test(match)) {
-      if (/:$/.test(match)) cls = 't-k';
-      else cls = 't-s';
-    } else if (/true|false|null/.test(match)) cls = 't-m';
-    return `<span class="${cls}">${match}</span>`;
-  });
-}
+const LOCAL_BASE = "http://127.0.0.1:3099";
 
 const endpoints = [
   { id: "root", method: "GET", path: "/api/", title: "Root", desc: "Returns a simple welcome message confirming the API is running.", response: `{\n  <span class='t-k'>"message"</span>: <span class='t-s'>"Welcome to the Unofficial Pornhub API"</span>\n}` },
@@ -670,7 +640,7 @@ endpoints.forEach((ep) => {
             <span class="code-lang">shell</span>
             <button class="copy-btn" data-copy="">Copy</button>
           </div>
-          <pre><code id="curl-${ep.id}">curl ${curlMethod}<span class='t-s'>${buildUrl(ep.path)}</span></code></pre>
+          <pre><code id="curl-${ep.id}">curl ${curlMethod}<span class='t-s'>${LOCAL_BASE}${ep.path}</span></code></pre>
         </div>
       </div>
 
