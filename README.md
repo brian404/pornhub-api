@@ -1,5 +1,5 @@
 # p-api
-Unofficial Pornhub API is a  Node.js-based REST API that scrapes and exposes publicly available metadata from pornhub.com. You can fetch video data, trending videos and more via clean JSON responses.
+Unofficial Pornhub API is a sleek Node.js RESTful solution that easily scrapes publicly available metadata from Pornhub.com and turns it into clean, structured JSON. It's great for videos, trending content, and more.
 
 ## Requirements
 
